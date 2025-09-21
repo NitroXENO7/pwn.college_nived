@@ -1,4 +1,4 @@
-# The Root
+# 1.The Root
 invoke a program in root directory
 
 ## My solve
@@ -19,7 +19,7 @@ Invoking programs with absolute path
 ## References 
 pwn college description
 
-# Programs and absolute paths
+# 2.Programs and absolute paths
 Invoke a program inside a folder called challenge
 
 ## My solve
@@ -40,7 +40,7 @@ How to invoke programs in folders using absolute paths
 ## References 
 pwn college description
 
-# Position thy self
+# 3.Position thy self
 cd into a specific folder and then run the program 'run'
 
 ## My solve
@@ -72,7 +72,7 @@ how to cd into specific folders and run programs from other folders using absolu
 ## References 
 pwn college description
 
-# Position elsewhere
+# 4.Position elsewhere
 cd into a specific folder and then run the program 'run'
 
 ## My solve
@@ -99,7 +99,7 @@ how to cd into specific folders and run programs from other folders using absolu
 ## References 
 pwn college description
 
-# Position yet elsewhere
+# 5.Position yet elsewhere
 cd into a specific folder and then run the program 'run'
 
 ## My solve
@@ -126,7 +126,7 @@ how to cd into specific folders and run programs from other folders using absolu
 ## References 
 pwn college description
 
-# implicit relative paths, from /
+# 6.implicit relative paths, from /
 use relative paths instead of absolute paths to run programs
 
 ## My solve
@@ -149,7 +149,7 @@ run programs from specific directory with relative paths
 ## References 
 pwn college description
 
-# explicit relative paths, from /
+# 7.explicit relative paths, from /
 using . as a reference to current directory
 
 ## My solve
@@ -171,7 +171,7 @@ use . as the current directory
 ## References 
 pwn college description
 
-# implicit relative path
+# 8.implicit relative path
 more in depth with relative paths
 
 ## My solve
@@ -193,7 +193,7 @@ running programs with relative paths
 ## References 
 pwn college description
 
-# home sweet home
+# 9.home sweet home
 run program with an argument of a relative path of a file , the argument should be less than 3 char long
 
 ## My solve
