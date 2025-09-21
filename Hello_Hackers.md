@@ -2,7 +2,7 @@
 Invoke commands
 
 ## My Solve
-**Flag;** `pwn.college{kae6vjgQOXukTlFiSmwZgjKgwDx.QX3YjM1wiMxkjNzEzW}`
+**Flag:** `pwn.college{kae6vjgQOXukTlFiSmwZgjKgwDx.QX3YjM1wiMxkjNzEzW}`
 
 invoked hello command.
 
