@@ -6,7 +6,8 @@ Invoke commands
 
 invoked hello command.
 
-```hacker@hello~intro-to-commands:~$ hello
+```
+hacker@hello~intro-to-commands:~$ hello
 Success! Here is your flag:
 pwn.college{kae6vjgQOXukTlFiSmwZgjKgwDx.QX3YjM1wiMxkjNzEzW}
 ```
@@ -26,10 +27,10 @@ Add arguments with commands
 invoked hello command with argument 'hackers'
 
 
-```hacker@hello~intro-to-arguments:~$ hello hackers
-Success! Here is your flag:
-pwn.college{UB2zPKLD8huCNBNWnnTLuGS9DY6.QX4YjM1wiMxkjNzEzW}
 ```
+hacker@hello~intro-to-arguments:~$ hello hackers
+Success! Here is your flag:
+pwn.college{UB2zPKLD8huCNBNWnnTLuGS9DY6.QX4YjM1wiMxkjNzEzW}```
 
 ##What I Learned
 How to invoke commands with arguments with them
@@ -45,8 +46,7 @@ See the command history
 
 Pressed arrow key up
 
-```hacker@hello~command-history:~$ the flag is pwn.college{MYpEjHyQRXleAdg4kQEiY3FhvWS.0lNzEzNxwiMxkjNzEzW}
-```
+```hacker@hello~command-history:~$ the flag is pwn.college{MYpEjHyQRXleAdg4kQEiY3FhvWS.0lNzEzNxwiMxkjNzEzW}```
 
 ##What I Learned
 Use arrows keys to scroll through previous commands
