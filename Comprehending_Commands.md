@@ -1,5 +1,5 @@
 # 1.cat: not the pet, but the command!
-you cat command to read file
+use cat command to read file
 
 ## My solve
 **Flag:** `pwn.college{UJR92B2ijWdomeEAJvzMjGx_OxM.QXxcTN0wiMxkjNzEzW}`
