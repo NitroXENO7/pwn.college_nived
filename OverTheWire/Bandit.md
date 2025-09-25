@@ -1488,7 +1488,19 @@ Investigate scheduled cron jobs to find password
 Connected to bandit21 and examined the cron jobs in /etc/cron.d/ directory. Found a cron job related to bandit22, which executed a script at regular intervals. Examined the script to find out what it was doing, which revealed it was copying the bandit22 password to a readable file in /tmp.
 
 ```
-[terminal output placeholder]
+bandit21@bandit:/etc/cron.d$ ls
+behemoth4_cleanup  cronjob_bandit23  leviathan5_cleanup    sysstat
+clean_tmp          cronjob_bandit24  manpage3_resetpw_job
+cronjob_bandit22   e2scrub_all       otw-tmp-dir
+bandit21@bandit:/etc/cron.d$ cat cronjob_bandit22
+@reboot bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+* * * * * bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+bandit21@bandit:/etc/cron.d$ cat /usr/bin/cronjob_bandit22.sh
+#!/bin/bash
+chmod 644 /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+cat /etc/bandit_pass/bandit22 > /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+bandit21@bandit:/etc/cron.d$ cat /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv 
+tRae0UfB9v0UzbCdn9cY0gQnds9GF58Q
 ```
 
 ## What I learned
@@ -1497,3 +1509,56 @@ How to examine cron job configurations and understand scheduled tasks in Linux s
 ## References 
 - cron and crontab for scheduled job management
 - crontab(5) manual page for understanding cron job syntax
+
+# Level 22 → Level 23
+Analyze a cron job script to find password location
+
+## My solve
+Connected to bandit22 and examined the cron jobs in /etc/cron.d/. Found the cron job for bandit23 which executed a shell script. Read the script to understand its logic - it created a filename based on the username, created a hash of that string, then used that hash to create a path to a file in /tmp where the password was stored.
+
+To get the password, I needed to:
+1. Analyze what the script would do when run as bandit23
+2. Execute the same commands manually with "bandit23" as the username
+3. Generate the correct filename hash
+4. Read the file from the determined /tmp location
+
+```
+bandit22@bandit:~$ cd /etc/cron.d
+bandit22@bandit:/etc/cron.d$ ls
+behemoth4_cleanup  cronjob_bandit23  leviathan5_cleanup    sysstat
+clean_tmp          cronjob_bandit24  manpage3_resetpw_job
+cronjob_bandit22   e2scrub_all       otw-tmp-dir
+bandit22@bandit:/etc/cron.d$ cat cronjob_bandit22
+@reboot bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+* * * * * bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+bandit22@bandit:/etc/cron.d$ cd
+bandit22@bandit:~$ cd /etc/cron.d
+bandit22@bandit:/etc/cron.d$ ls
+behemoth4_cleanup  cronjob_bandit23  leviathan5_cleanup    sysstat
+clean_tmp          cronjob_bandit24  manpage3_resetpw_job
+cronjob_bandit22   e2scrub_all       otw-tmp-dir
+bandit22@bandit:/etc/cron.d$ cat cronjob_bandit23
+@reboot bandit23 /usr/bin/cronjob_bandit23.sh  &> /dev/null
+* * * * * bandit23 /usr/bin/cronjob_bandit23.sh  &> /dev/null
+bandit22@bandit:/etc/cron.d$ cat /usr/bin/cronjob_bandit23.sh
+#!/bin/bash
+
+myname=$(whoami)
+mytarget=$(echo I am user $myname | md5sum | cut -d ' ' -f 1)
+
+echo "Copying passwordfile /etc/bandit_pass/$myname to /tmp/$mytarget"
+
+cat /etc/bandit_pass/$myname > /tmp/$mytarget
+bandit22@bandit:/etc/cron.d$ echo I am user bandit23 | md5sum | cut -d ' ' -f 1
+8ca319486bfbbc3663ea0fbe81326349
+bandit22@bandit:/etc/cron.d$ cat /tmp/8ca319486bfbbc3663ea0fbe81326349 
+0Zf11ioIjMVN551jX3CmStKLYqjk54Ga
+```
+
+## What I learned
+How to read and understand shell scripts written by others, follow the logic of scripts that use variable substitution and hashing, and how to manually execute script logic to get desired results.
+
+## References 
+- cron and crontab for scheduled job management
+- bash script analysis and execution
+
