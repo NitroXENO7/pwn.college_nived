@@ -654,3 +654,846 @@ How to use the tr command to perform character substitution for simple ciphers l
 ## References 
 - tr command for character translation
 - Rot13 on Wikipedia
+
+# Level 12 → Level 13
+Deal with a hexdump of repeatedly compressed data
+
+## My solve
+Connected to bandit12 and found the data.txt hexdump file. Created a temporary directory using mktemp -d, copied the file there, and began the decompression process:
+
+1. Used xxd -r to reverse the hexdump back to binary data
+2. Used file command to identify the compression type
+3. Renamed the file with appropriate extension and used the correct decompression tool
+4. Repeated steps 2-3 multiple times through various compression formats (gzip, bzip2, tar)
+5. Eventually found a text file containing the password
+
+```
+bandit12@bandit:~$ ls
+data.txt
+bandit12@bandit:~$ mktemp -d
+/tmp/tmp.lE8XtLvS76
+bandit12@bandit:~$ cp data.txt /tmp/tmp.lE8XtLvS76
+bandit12@bandit:~$ cd /tmp/tmp.lE8XtLvS76
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ ls
+data.txt
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ file data.txt 
+data.txt: ASCII text
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ cat data.txt 
+00000000: 1f8b 0808 0933 9f68 0203 6461 7461 322e  .....3.h..data2.
+00000010: 6269 6e00 0148 02b7 fd42 5a68 3931 4159  bin..H...BZh91AY
+00000020: 2653 59be 9d9d 9600 001f ffff fe7f fbcf  &SY.............
+00000030: af7f 9eff f7ee ffdf bff7 fef7 ddbe 9db7  ................
+00000040: bf9f 9f5f ca6f fffe d6fb feff b001 3ab3  ..._.o........:.
+00000050: 0403 40d0 0000 00d0 01a0 03d4 0000 0346  ..@............F
+00000060: 41a1 9000 0000 1900 0190 0686 8191 a326  A..............&
+00000070: 1340 0c8c 4d0f 4d4c 4403 468d 0d1a 0001  .@..M.MLD.F.....
+00000080: a686 8000 01a0 6462 6868 6800 0006 8f50  ......dbhhh....P
+00000090: 00d0 1a06 9a0c d406 8c80 189a 6834 64d0  ............h4d.
+000000a0: 064d 0000 3a68 1a34 d00d 0001 a1a1 91a0  .M..:h.4........
+000000b0: 0000 0323 4d03 2341 9034 1a00 00c8 320d  ...#M.#A.4....2.
+000000c0: 001a 1880 3401 8406 9a68 00d1 a34d 34d1  ....4....h...M4.
+000000d0: 7808 0920 2027 a994 91db 6412 de13 8af2  x..  '....d.....
+000000e0: 7f2a f82d c875 b4c2 6723 afc6 8b7c 62ad  .*.-.u..g#...|b.
+000000f0: a375 3887 65c0 1718 5224 81c3 0b33 8e21  .u8.e...R$...3.!
+00000100: c736 e901 b187 8c9f 5b3c a81e f09d ec5c  .6......[<.....\
+00000110: 41c0 0b74 ca62 56e6 8452 ce37 8889 5ab7  A..t.bV..R.7..Z.
+00000120: d5d8 9316 1d26 26e7 b18f e376 b6b9 02ec  .....&&....v....
+00000130: 0880 aa07 3c2c fd25 03ba cc87 59fa 5436  ....<,.%....Y.T6
+00000140: 4a67 b193 3aec d8a3 6813 92e6 67ce 5118  Jg..:...h...g.Q.
+00000150: b22b d1b2 114c 9fb6 3033 d37a 86b2 62c5  .+...L..03.z..b.
+00000160: 9fb1 09c3 afcb 76ab ab69 e168 cdb6 6d5e  ......v..i.h..m^
+00000170: 3b86 91a9 7a45 0371 70de ca02 4ce5 1de9  ;...zE.qp...L...
+00000180: f996 0ae0 2c33 a0ca ceeb 1d0a 02a7 3160  ....,3........1`
+00000190: 9746 3cd6 c5c1 433b 991f 9989 5ab3 cbf2  .F<...C;....Z...
+000001a0: 0759 072f 8b6f 08af f163 c149 8879 f738  .Y./.o...c.I.y.8
+000001b0: 6241 3876 4edf 6038 0b60 277c d2ca 7908  bA8vN.`8.`'|..y.
+000001c0: b1f3 a93c 23d0 277b 215c 7498 b2a1 01dd  ...<#.'{!\t.....
+000001d0: 563b be47 3fdc a008 0f08 82c7 2044 c8da  V;.G?....... D..
+000001e0: a241 c91c c3ee f1a1 9b98 25eb 5212 3fb1  .A........%.R.?.
+000001f0: e545 2469 108f 7f01 e7c9 faed cd3e 9f08  .E$i.........>..
+00000200: 97bc 1b04 a087 e826 0993 65d3 13b6 5365  .......&..e...Se
+00000210: 3c6d 10e5 1d85 66ab 0497 6242 8799 8112  <m....f...bB....
+00000220: 61a0 87dc fcfb 9274 774a c918 d5ce 3c0f  a......twJ....<.
+00000230: d346 95c8 1e30 42a6 a3b7 a93b 67f3 186c  .F...0B....;g..l
+00000240: 904c 842c 30c5 e1b2 b841 05e0 7144 2a60  .L.,0....A..qD*`
+00000250: ca14 0a52 f589 fe2e e48a 70a1 217d 3b3b  ...R......p.!};;
+00000260: 2c19 d8f7 0e48 0200 00                   ,....H...
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ xxd -r data.txt 
+�       3�hdata2.binH��BZh91AY&SY��������ϯ�����߿���ݾ�����_�o�������:�@����FA�������&@
+▒����dbhhh�P�▒�
+▒▒�4��hѣM4�x2  �  '����d���*�-�u��g#�Ƌ|b��u8�e�▒R$��
+                                                    3�!�6�����[<����\A�
+                                                                       t�bV��R�7��Z��&&籏�v����<,�%�Y�T6Jg��:�أh��g�Q▒�+ѲL��03�z��bş� ï�v��i�hͶm^;���zEqp��L����
+�,3����
+�1`�F<���C;���Z���Y/���c�I�y�8bA8vN�`8
+                                      `'|�����<#�'{!\t����V;�G�� D�ڢA���񡛘%�R?��E$i������>����&        �e��Se<m��f��bB���a������twJ�▒��<�F��0B����;g�▒l�L�,0�ᲸA�qD*`�
+R���.��p�!};;,��Hbandit12@bandit:/tmp/tmp.lE8XtLvS76$ ls
+data.txt
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ cat data.txt 
+00000000: 1f8b 0808 0933 9f68 0203 6461 7461 322e  .....3.h..data2.
+00000010: 6269 6e00 0148 02b7 fd42 5a68 3931 4159  bin..H...BZh91AY
+00000020: 2653 59be 9d9d 9600 001f ffff fe7f fbcf  &SY.............
+00000030: af7f 9eff f7ee ffdf bff7 fef7 ddbe 9db7  ................
+00000040: bf9f 9f5f ca6f fffe d6fb feff b001 3ab3  ..._.o........:.
+00000050: 0403 40d0 0000 00d0 01a0 03d4 0000 0346  ..@............F
+00000060: 41a1 9000 0000 1900 0190 0686 8191 a326  A..............&
+00000070: 1340 0c8c 4d0f 4d4c 4403 468d 0d1a 0001  .@..M.MLD.F.....
+00000080: a686 8000 01a0 6462 6868 6800 0006 8f50  ......dbhhh....P
+00000090: 00d0 1a06 9a0c d406 8c80 189a 6834 64d0  ............h4d.
+000000a0: 064d 0000 3a68 1a34 d00d 0001 a1a1 91a0  .M..:h.4........
+000000b0: 0000 0323 4d03 2341 9034 1a00 00c8 320d  ...#M.#A.4....2.
+000000c0: 001a 1880 3401 8406 9a68 00d1 a34d 34d1  ....4....h...M4.
+000000d0: 7808 0920 2027 a994 91db 6412 de13 8af2  x..  '....d.....
+000000e0: 7f2a f82d c875 b4c2 6723 afc6 8b7c 62ad  .*.-.u..g#...|b.
+000000f0: a375 3887 65c0 1718 5224 81c3 0b33 8e21  .u8.e...R$...3.!
+00000100: c736 e901 b187 8c9f 5b3c a81e f09d ec5c  .6......[<.....\
+00000110: 41c0 0b74 ca62 56e6 8452 ce37 8889 5ab7  A..t.bV..R.7..Z.
+00000120: d5d8 9316 1d26 26e7 b18f e376 b6b9 02ec  .....&&....v....
+00000130: 0880 aa07 3c2c fd25 03ba cc87 59fa 5436  ....<,.%....Y.T6
+00000140: 4a67 b193 3aec d8a3 6813 92e6 67ce 5118  Jg..:...h...g.Q.
+00000150: b22b d1b2 114c 9fb6 3033 d37a 86b2 62c5  .+...L..03.z..b.
+00000160: 9fb1 09c3 afcb 76ab ab69 e168 cdb6 6d5e  ......v..i.h..m^
+00000170: 3b86 91a9 7a45 0371 70de ca02 4ce5 1de9  ;...zE.qp...L...
+00000180: f996 0ae0 2c33 a0ca ceeb 1d0a 02a7 3160  ....,3........1`
+00000190: 9746 3cd6 c5c1 433b 991f 9989 5ab3 cbf2  .F<...C;....Z...
+000001a0: 0759 072f 8b6f 08af f163 c149 8879 f738  .Y./.o...c.I.y.8
+000001b0: 6241 3876 4edf 6038 0b60 277c d2ca 7908  bA8vN.`8.`'|..y.
+000001c0: b1f3 a93c 23d0 277b 215c 7498 b2a1 01dd  ...<#.'{!\t.....
+000001d0: 563b be47 3fdc a008 0f08 82c7 2044 c8da  V;.G?....... D..
+000001e0: a241 c91c c3ee f1a1 9b98 25eb 5212 3fb1  .A........%.R.?.
+000001f0: e545 2469 108f 7f01 e7c9 faed cd3e 9f08  .E$i.........>..
+00000200: 97bc 1b04 a087 e826 0993 65d3 13b6 5365  .......&..e...Se
+00000210: 3c6d 10e5 1d85 66ab 0497 6242 8799 8112  <m....f...bB....
+00000220: 61a0 87dc fcfb 9274 774a c918 d5ce 3c0f  a......twJ....<.
+00000230: d346 95c8 1e30 42a6 a3b7 a93b 67f3 186c  .F...0B....;g..l
+00000240: 904c 842c 30c5 e1b2 b841 05e0 7144 2a60  .L.,0....A..qD*`
+00000250: ca14 0a52 f589 fe2e e48a 70a1 217d 3b3b  ...R......p.!};;
+00000260: 2c19 d8f7 0e48 0200 00                   ,....H...
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ xxd -r data.txt | tee data.bin
+�       3�hdata2.binH��BZh91AY&SY��������ϯ�����߿���ݾ�����_�o�������:�@����FA�������&@
+▒����dbhhh�P�▒�
+▒▒�4��hѣM4�x2  �  '����d���*�-�u��g#�Ƌ|b��u8�e�▒R$��
+                                                    3�!�6�����[<����\A�
+                                                                       t�bV��R�7��Z��&&籏�v����<,�%�Y�T6Jg��:�أh��g�Q▒�+ѲL��03�z��bş� ï�v��i�hͶm^;���zEqp��L����
+�,3����
+�1`�F<���C;���Z���Y/���c�I�y�8bA8vN�`8
+                                      `'|�����<#�'{!\t����V;�G�� D�ڢA���񡛘%�R?��E$i������>����&        �e��Se<m��f��bB���a������twJ�▒��<�F��0B����;g�▒l�L�,0�ᲸA�qD*`�
+R���.��p�!};;,��Hbandit12@bandit:/tmp/tmp.lE8XtLvS76$ file data.bin
+data.bin: gzip compressed data, was "data2.bin", last modified: Fri Aug 15 13:15:53 2025, max compression, from Unix, original size modulo 2^32 584
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ mv data.bin data.gz
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ gunzip data.gz 
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ ls
+data  data.txt
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ file data
+data: bzip2 compressed data, block size = 900k
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ bzip2 -d data
+bzip2: Can't guess original name for data -- using data.out
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ ls
+data.out  data.txt
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ file data.out 
+data.out: gzip compressed data, was "data4.bin", last modified: Fri Aug 15 13:15:53 2025, max compression, from Unix, original size modulo 2^32 20480
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ mv data.out data.gz
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ gunzip data.gz 
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ ls
+data  data.txt
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ file data
+data: POSIX tar archive (GNU)
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ tar -x -f data
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ ls
+data  data5.bin  data.txt
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ file data5.bin 
+data5.bin: POSIX tar archive (GNU)
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ tar -x -f data5.bin
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ ls
+data  data5.bin  data6.bin  data.txt
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ file data6.bin
+data6.bin: bzip2 compressed data, block size = 900k
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ bzip2 -d data6.bin
+bzip2: Can't guess original name for data6.bin -- using data6.bin.out
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ ls
+data  data5.bin  data6.bin.out  data.txt
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ file data6.bin.out 
+data6.bin.out: POSIX tar archive (GNU)
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ tar -x -f data6.bin.out
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ ls
+data  data5.bin  data6.bin.out  data8.bin  data.txt
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ file data8.bin
+data8.bin: gzip compressed data, was "data9.bin", last modified: Fri Aug 15 13:15:53 2025, max compression, from Unix, original size modulo 2^32 49
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ mv data8.bin data8.gz
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ gunzip data8.gz
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ ls
+data  data5.bin  data6.bin.out  data8  data.txt
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ file data8
+data8: ASCII text
+bandit12@bandit:/tmp/tmp.lE8XtLvS76$ cat data8
+The password is FO5dwFsc0cbaIiH0h8J2eUks2vdTDwAn
+```
+
+## What I learned
+How to handle hexdumps, identify file types, and work with multiple layers of compression using various tools like xxd, file, tar, gzip, and bzip2.
+
+## References 
+- xxd command for converting between binary and hexdump
+- file command to identify file types
+- Various decompression tools (gzip, bzip2, tar)
+- Hex dump on Wikipedia
+
+# Level 13 → Level 14
+Use an SSH private key to access the next level
+
+## My solve
+Connected to bandit13 and found an SSH private key in the home directory. Used this key to log into bandit14 on localhost, then read the password file that was only accessible to the bandit14 user.
+
+```
+bandit13@bandit:~$ ls
+sshkey.private
+bandit13@bandit:~$ ssh -i sshkey.private -p 2220 bandit14@bandit.labs.overthewire.org
+The authenticity of host '[bandit.labs.overthewire.org]:2220 ([127.0.0.1]:2220)' can't be established.
+ED25519 key fingerprint is SHA256:C2ihUBV7ihnV1wUXRb4RrEcLfXC5CXlhmAAM/urerLY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Could not create directory '/home/bandit13/.ssh' (Permission denied).
+Failed to add the host to the list of known hosts (/home/bandit13/.ssh/known_hosts).
+                         _                     _ _ _   
+                        | |__   __ _ _ __   __| (_) |_ 
+                        | '_ \ / _` | '_ \ / _` | | __|
+                        | |_) | (_| | | | | (_| | | |_ 
+                        |_.__/ \__,_|_| |_|\__,_|_|\__|
+                                                       
+
+                      This is an OverTheWire game server. 
+            More information on http://www.overthewire.org/wargames
+
+!!! You are trying to log into this SSH server with a password on port 2220 from localhost.
+!!! Connecting from localhost is blocked to conserve resources.
+!!! Please log out and log in again.
+
+backend: gibson-1
+
+      ,----..            ,----,          .---.
+     /   /   \         ,/   .`|         /. ./|
+    /   .     :      ,`   .'  :     .--'.  ' ;
+   .   /   ;.  \   ;    ;     /    /__./ \ : |
+  .   ;   /  ` ; .'___,/    ,' .--'.  '   \' .
+  ;   |  ; \ ; | |    :     | /___/ \ |    ' '
+  |   :  | ; | ' ;    |.';  ; ;   \  \;      :
+  .   |  ' ' ' : `----'  |  |  \   ;  `      |
+  '   ;  \; /  |     '   :  ;   .   \    .\  ;
+   \   \  ',  /      |   |  '    \   \   ' \ |
+    ;   :    /       '   :  |     :   '  |--"
+     \   \ .'        ;   |.'       \   \ ;
+  www. `---` ver     '---' he       '---" ire.org
+
+
+Welcome to OverTheWire!
+
+If you find any problems, please report them to the #wargames channel on
+discord or IRC.
+
+--[ Playing the games ]--
+
+  This machine might hold several wargames.
+  If you are playing "somegame", then:
+
+    * USERNAMES are somegame0, somegame1, ...
+    * Most LEVELS are stored in /somegame/.
+    * PASSWORDS for each level are stored in /etc/somegame_pass/.
+
+  Write-access to homedirectories is disabled. It is advised to create a
+  working directory with a hard-to-guess name in /tmp/.  You can use the
+  command "mktemp -d" in order to generate a random and hard to guess
+  directory in /tmp/.  Read-access to both /tmp/ is disabled and to /proc
+  restricted so that users cannot snoop on eachother. Files and directories
+  with easily guessable or short names will be periodically deleted! The /tmp
+  directory is regularly wiped.
+  Please play nice:
+
+    * don't leave orphan processes running
+    * don't leave exploit-files laying around
+    * don't annoy other players
+    * don't post passwords or spoilers
+    * again, DONT POST SPOILERS!
+      This includes writeups of your solution on your blog or website!
+
+--[ Tips ]--
+
+  This machine has a 64bit processor and many security-features enabled
+  by default, although ASLR has been switched off.  The following
+  compiler flags might be interesting:
+
+    -m32                    compile for 32bit
+    -fno-stack-protector    disable ProPolice
+    -Wl,-z,norelro          disable relro
+
+  In addition, the execstack tool can be used to flag the stack as
+  executable on ELF binaries.
+
+  Finally, network-access is limited for most levels by a local
+  firewall.
+
+--[ Tools ]--
+
+ For your convenience we have installed a few useful tools which you can find
+ in the following locations:
+
+    * gef (https://github.com/hugsy/gef) in /opt/gef/
+    * pwndbg (https://github.com/pwndbg/pwndbg) in /opt/pwndbg/
+    * gdbinit (https://github.com/gdbinit/Gdbinit) in /opt/gdbinit/
+    * pwntools (https://github.com/Gallopsled/pwntools)
+    * radare2 (http://www.radare.org/)
+
+--[ More information ]--
+
+  For more information regarding individual wargames, visit
+  http://www.overthewire.org/wargames/
+
+  For support, questions or comments, contact us on discord or IRC.
+
+  Enjoy your stay!
+
+bandit14@bandit:~$ cat  /etc/bandit_pass/bandit14
+MU4VWeTyJk8ROof1qqmcBPaLh7lDCPvS
+```
+
+## What I learned
+How to use SSH with private key authentication instead of password authentication, and how to use a private key file with the ssh -i option.
+
+## References 
+- ssh command with -i flag for identity file (private key)
+- SSH/OpenSSH/Keys documentation
+
+# Level 14 → Level 15
+Submit a password to a network service on a specific port
+
+## My solve
+Connected to bandit14, retrieved the current level's password from /etc/bandit_pass/bandit14, then used netcat (nc) to connect to localhost on port 30000 and submitted the password. The service responded with the password for the next level.
+
+```
+bandit14@bandit:~$ man nc
+bandit14@bandit:~$ nc localhost 30000
+MU4VWeTyJk8ROof1qqmcBPaLh7lDCPvS
+Correct!
+8xCjnmgoKbGLhHFAZlGE5Tmu4M2tKJQo
+```
+
+## What I learned
+How to use netcat (nc) to connect to network services on specific ports and send data to them.
+
+## References 
+- nc (netcat) command for network connections
+- Localhost and port concepts in networking
+
+# Level 15 → Level 16
+Connect to a service using SSL/TLS encryption
+
+## My solve
+Connected to bandit15, then used openssl s_client to establish an encrypted SSL/TLS connection to localhost on port 30001. Submitted the current level's password through this secure connection to receive the password for the next level.
+
+```
+bandit15@bandit:~$ man openssl
+bandit15@bandit:~$ opensssl s_client localhost:30001
+Command 'opensssl' not found, did you mean:
+  command 'openssl' from deb openssl (3.0.13-0ubuntu3.5)
+Try: apt install <deb name>
+bandit15@bandit:~$ openssl s_client localhost:30001
+CONNECTED(00000003)
+Can't use SSL_get_servername
+depth=0 CN = SnakeOil
+verify error:num=18:self-signed certificate
+verify return:1
+depth=0 CN = SnakeOil
+verify return:1
+---
+Certificate chain
+ 0 s:CN = SnakeOil
+   i:CN = SnakeOil
+   a:PKEY: rsaEncryption, 4096 (bit); sigalg: RSA-SHA256
+   v:NotBefore: Jun 10 03:59:50 2024 GMT; NotAfter: Jun  8 03:59:50 2034 GMT
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIFBzCCAu+gAwIBAgIUBLz7DBxA0IfojaL/WaJzE6Sbz7cwDQYJKoZIhvcNAQEL
+BQAwEzERMA8GA1UEAwwIU25ha2VPaWwwHhcNMjQwNjEwMDM1OTUwWhcNMzQwNjA4
+MDM1OTUwWjATMREwDwYDVQQDDAhTbmFrZU9pbDCCAiIwDQYJKoZIhvcNAQEBBQAD
+ggIPADCCAgoCggIBANI+P5QXm9Bj21FIPsQqbqZRb5XmSZZJYaam7EIJ16Fxedf+
+jXAv4d/FVqiEM4BuSNsNMeBMx2Gq0lAfN33h+RMTjRoMb8yBsZsC063MLfXCk4p+
+09gtGP7BS6Iy5XdmfY/fPHvA3JDEScdlDDmd6Lsbdwhv93Q8M6POVO9sv4HuS4t/
+jEjr+NhE+Bjr/wDbyg7GL71BP1WPZpQnRE4OzoSrt5+bZVLvODWUFwinB0fLaGRk
+GmI0r5EUOUd7HpYyoIQbiNlePGfPpHRKnmdXTTEZEoxeWWAaM1VhPGqfrB/Pnca+
+vAJX7iBOb3kHinmfVOScsG/YAUR94wSELeY+UlEWJaELVUntrJ5HeRDiTChiVQ++
+wnnjNbepaW6shopybUF3XXfhIb4NvwLWpvoKFXVtcVjlOujF0snVvpE+MRT0wacy
+tHtjZs7Ao7GYxDz6H8AdBLKJW67uQon37a4MI260ADFMS+2vEAbNSFP+f6ii5mrB
+18cY64ZaF6oU8bjGK7BArDx56bRc3WFyuBIGWAFHEuB948BcshXY7baf5jjzPmgz
+mq1zdRthQB31MOM2ii6vuTkheAvKfFf+llH4M9SnES4NSF2hj9NnHga9V08wfhYc
+x0W6qu+S8HUdVF+V23yTvUNgz4Q+UoGs4sHSDEsIBFqNvInnpUmtNgcR2L5PAgMB
+AAGjUzBRMB0GA1UdDgQWBBTPo8kfze4P9EgxNuyk7+xDGFtAYzAfBgNVHSMEGDAW
+gBTPo8kfze4P9EgxNuyk7+xDGFtAYzAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3
+DQEBCwUAA4ICAQAKHomtmcGqyiLnhziLe97Mq2+Sul5QgYVwfx/KYOXxv2T8ZmcR
+Ae9XFhZT4jsAOUDK1OXx9aZgDGJHJLNEVTe9zWv1ONFfNxEBxQgP7hhmDBWdtj6d
+taqEW/Jp06X+08BtnYK9NZsvDg2YRcvOHConeMjwvEL7tQK0m+GVyQfLYg6jnrhx
+egH+abucTKxabFcWSE+Vk0uJYMqcbXvB4WNKz9vj4V5Hn7/DN4xIjFko+nREw6Oa
+/AUFjNnO/FPjap+d68H1LdzMH3PSs+yjGid+6Zx9FCnt9qZydW13Miqg3nDnODXw
++Z682mQFjVlGPCA5ZOQbyMKY4tNazG2n8qy2famQT3+jF8Lb6a4NGbnpeWnLMkIu
+jWLWIkA9MlbdNXuajiPNVyYIK9gdoBzbfaKwoOfSsLxEqlf8rio1GGcEV5Hlz5S2
+txwI0xdW9MWeGWoiLbZSbRJH4TIBFFtoBG0LoEJi0C+UPwS8CDngJB4TyrZqEld3
+rH87W+Et1t/Nepoc/Eoaux9PFp5VPXP+qwQGmhir/hv7OsgBhrkYuhkjxZ8+1uk7
+tUWC/XM0mpLoxsq6vVl3AJaJe1ivdA9xLytsuG4iv02Juc593HXYR8yOpow0Eq2T
+U5EyeuFg5RXYwAPi7ykw1PW7zAPL4MlonEVz+QXOSx6eyhimp1VZC11SCg==
+-----END CERTIFICATE-----
+subject=CN = SnakeOil
+issuer=CN = SnakeOil
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 2103 bytes and written 373 bytes
+Verification error: self-signed certificate
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Server public key is 4096 bit
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 18 (self-signed certificate)
+---
+---
+Post-Handshake New Session Ticket arrived:
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Session-ID: D86E7E0D6D04D33AF1530448D45CB163783D39455BD65523F9D2D5F7061FC259
+    Session-ID-ctx: 
+    Resumption PSK: F6F1A0886BDE1C1C6B3357BAD8ECCE0635FDF2A0D334F4107F51E9ED112C7FC5ABF289DE7911D23FA0F74E2E6AD1617A
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 300 (seconds)
+    TLS session ticket:
+    0000 - b3 e0 25 4d 51 8b 9b bc-6d 7b 2e b9 70 74 42 b6   ..%MQ...m{..ptB.
+    0010 - 17 6c 45 21 66 55 c5 38-1f fa 33 54 7b 6c 53 d0   .lE!fU.8..3T{lS.
+    0020 - f7 49 dd c6 01 0c dc 68-79 fa a5 39 ce 4e 92 96   .I.....hy..9.N..
+    0030 - b1 14 ee bc 0c 6b 4e 15-8e 54 f4 fc 60 f4 12 0d   .....kN..T..`...
+    0040 - c1 45 d0 83 38 26 d8 2b-e4 8e b8 29 0c b9 32 ba   .E..8&.+...)..2.
+    0050 - 90 3c 6c 0e 50 12 03 08-43 46 6b 67 6e da 01 ff   .<l.P...CFkgn...
+    0060 - c7 3d 20 15 80 1d 68 ae-5d 09 f4 d4 e7 57 ae 0a   .= ...h.]....W..
+    0070 - dd 6f 3a d9 e5 40 df 92-50 20 96 6f f6 3f cf fc   .o:..@..P .o.?..
+    0080 - 52 0f f5 f8 7d 59 c0 f2-ac d2 1d b6 ce 26 30 a0   R...}Y.......&0.
+    0090 - 32 f6 e3 8a 07 a3 b2 13-f5 83 bb ea 32 b5 16 44   2...........2..D
+    00a0 - 4b 23 cc 6f 97 ad e4 a7-cf 55 f2 81 c8 ab 49 75   K#.o.....U....Iu
+    00b0 - b6 5d fc 71 e3 70 1e af-f2 5b 29 ef 52 b6 77 dd   .].q.p...[).R.w.
+    00c0 - 23 08 0a e2 fa 0f 7e 0b-d1 87 6c 04 1b 86 12 bc   #.....~...l.....
+    00d0 - 8c 85 5a db 0f b2 b5 bf-28 01 fc e8 99 be e9 18   ..Z.....(.......
+
+    Start Time: 1758715729
+    Timeout   : 7200 (sec)
+    Verify return code: 18 (self-signed certificate)
+    Extended master secret: no
+    Max Early Data: 0
+---
+read R BLOCK
+---
+Post-Handshake New Session Ticket arrived:
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Session-ID: 0C6CC48380A692503C9DCC7F4E74B608BAE2153844667F062D09153B47CB395D
+    Session-ID-ctx: 
+    Resumption PSK: D9BF71CB953AE07BDA2778A7CD3B1F7498A1A1BCF3715D43AFA2FBA9305F07ACEE9BD0D54A0F075ABBF72EC5E8221D82
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 300 (seconds)
+    TLS session ticket:
+    0000 - b3 e0 25 4d 51 8b 9b bc-6d 7b 2e b9 70 74 42 b6   ..%MQ...m{..ptB.
+    0010 - 93 db 92 c4 24 f1 28 c6-bd 95 e7 44 20 74 3b 9f   ....$.(....D t;.
+    0020 - fc 4a 57 d0 81 54 4e 26-b3 a2 e0 3e ca 9c de 86   .JW..TN&...>....
+    0030 - 92 28 fd 00 f3 18 24 88-7b d9 43 1c 07 b5 c1 96   .(....$.{.C.....
+    0040 - 61 40 71 1c f0 05 13 eb-8a 72 48 68 5e 5e fa 97   a@q......rHh^^..
+    0050 - 71 1c 24 2b 69 c5 91 c9-fb 0c c3 25 9e 3b 59 47   q.$+i......%.;YG
+    0060 - 18 8b 7c bd d6 40 5a 46-5f 7b fb 83 5a 2b fc cf   ..|..@ZF_{..Z+..
+    0070 - 69 67 66 8e 44 77 b0 63-24 34 93 ff 0c 5f a6 59   igf.Dw.c$4..._.Y
+    0080 - 9b d7 a0 89 56 7d e6 fb-66 52 5b 89 8f bf 7a 5d   ....V}..fR[...z]
+    0090 - 61 c1 ac 7f 2a ab 0b 3d-04 48 31 15 22 e2 cd fc   a...*..=.H1."...
+    00a0 - 75 13 fa ff 3b 82 77 14-5a 9a 7d 36 c9 18 bd 54   u...;.w.Z.}6...T
+    00b0 - 5b f2 7e 8a 3c a7 47 54-14 4a 0c eb 35 c4 f7 01   [.~.<.GT.J..5...
+    00c0 - 09 9e 47 4b 1d b5 e2 18-61 a1 c1 2b 32 34 73 33   ..GK....a..+24s3
+    00d0 - 89 c6 fa 2e 22 0d 76 34-c3 21 bb 3d f0 05 b6 18   ....".v4.!.=....
+
+    Start Time: 1758715729
+    Timeout   : 7200 (sec)
+    Verify return code: 18 (self-signed certificate)
+    Extended master secret: no
+    Max Early Data: 0
+---
+read R BLOCK
+8xCjnmgoKbGLhHFAZlGE5Tmu4M2tKJQo
+Correct!
+kSkvUpMQ7lBYyCM4GBPvCvT1BfWRy0Dx
+```
+
+## What I learned
+How to use openssl s_client to connect to services that require SSL/TLS encryption, and how to send data through an encrypted connection.
+
+## References 
+- openssl s_client command for SSL/TLS connections
+- Secure Socket Layer/Transport Layer Security on Wikipedia
+- OpenSSL Cookbook - Testing with OpenSSL
+
+# Level 16 → Level 17
+Find a specific SSL/TLS service and retrieve credentials
+
+## My solve
+Connected to bandit16, then used nmap to scan ports 31000-32000 on localhost to find open ports. Tested each open port with openssl s_client to determine which ones used SSL/TLS encryption. Submitted the current level's password to each SSL/TLS service until finding the one that returned credentials (an SSH private key) instead of echoing back the input.
+
+```
+bandit16@bandit:~$ nmap localhost -p 31000-32000
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-09-24 12:38 UTC
+Nmap scan report for localhost (127.0.0.1)
+Host is up (0.00015s latency).
+Not shown: 996 closed tcp ports (conn-refused)
+PORT      STATE SERVICE
+31046/tcp open  unknown
+31518/tcp open  unknown
+31691/tcp open  unknown
+31790/tcp open  unknown
+31960/tcp open  unknown
+
+Nmap done: 1 IP address (1 host up) scanned in 0.05 seconds
+
+bandit16@bandit:~$ openssl s_client -connect localhost:31790 -quiet 
+Can't use SSL_get_servername
+depth=0 CN = SnakeOil
+verify error:num=18:self-signed certificate
+verify return:1
+depth=0 CN = SnakeOil
+verify return:1
+kSkvUpMQ7lBYyCM4GBPvCvT1BfWRy0Dx
+Correct!
+-----BEGIN RSA PRIVATE KEY-----
+MIIEogIBAAKCAQEAvmOkuifmMg6HL2YPIOjon6iWfbp7c3jx34YkYWqUH57SUdyJ
+imZzeyGC0gtZPGujUSxiJSWI/oTqexh+cAMTSMlOJf7+BrJObArnxd9Y7YT2bRPQ
+Ja6Lzb558YW3FZl87ORiO+rW4LCDCNd2lUvLE/GL2GWyuKN0K5iCd5TbtJzEkQTu
+DSt2mcNn4rhAL+JFr56o4T6z8WWAW18BR6yGrMq7Q/kALHYW3OekePQAzL0VUYbW
+JGTi65CxbCnzc/w4+mqQyvmzpWtMAzJTzAzQxNbkR2MBGySxDLrjg0LWN6sK7wNX
+x0YVztz/zbIkPjfkU1jHS+9EbVNj+D1XFOJuaQIDAQABAoIBABagpxpM1aoLWfvD
+KHcj10nqcoBc4oE11aFYQwik7xfW+24pRNuDE6SFthOar69jp5RlLwD1NhPx3iBl
+J9nOM8OJ0VToum43UOS8YxF8WwhXriYGnc1sskbwpXOUDc9uX4+UESzH22P29ovd
+d8WErY0gPxun8pbJLmxkAtWNhpMvfe0050vk9TL5wqbu9AlbssgTcCXkMQnPw9nC
+YNN6DDP2lbcBrvgT9YCNL6C+ZKufD52yOQ9qOkwFTEQpjtF4uNtJom+asvlpmS8A
+vLY9r60wYSvmZhNqBUrj7lyCtXMIu1kkd4w7F77k+DjHoAXyxcUp1DGL51sOmama
++TOWWgECgYEA8JtPxP0GRJ+IQkX262jM3dEIkza8ky5moIwUqYdsx0NxHgRRhORT
+8c8hAuRBb2G82so8vUHk/fur85OEfc9TncnCY2crpoqsghifKLxrLgtT+qDpfZnx
+SatLdt8GfQ85yA7hnWWJ2MxF3NaeSDm75Lsm+tBbAiyc9P2jGRNtMSkCgYEAypHd
+HCctNi/FwjulhttFx/rHYKhLidZDFYeiE/v45bN4yFm8x7R/b0iE7KaszX+Exdvt
+SghaTdcG0Knyw1bpJVyusavPzpaJMjdJ6tcFhVAbAjm7enCIvGCSx+X3l5SiWg0A
+R57hJglezIiVjv3aGwHwvlZvtszK6zV6oXFAu0ECgYAbjo46T4hyP5tJi93V5HDi
+Ttiek7xRVxUl+iU7rWkGAXFpMLFteQEsRr7PJ/lemmEY5eTDAFMLy9FL2m9oQWCg
+R8VdwSk8r9FGLS+9aKcV5PI/WEKlwgXinB3OhYimtiG2Cg5JCqIZFHxD6MjEGOiu
+L8ktHMPvodBwNsSBULpG0QKBgBAplTfC1HOnWiMGOU3KPwYWt0O6CdTkmJOmL8Ni
+blh9elyZ9FsGxsgtRBXRsqXuz7wtsQAgLHxbdLq/ZJQ7YfzOKU4ZxEnabvXnvWkU
+YOdjHdSOoKvDQNWu6ucyLRAWFuISeXw9a/9p7ftpxm0TSgyvmfLF2MIAEwyzRqaM
+77pBAoGAMmjmIJdjp+Ez8duyn3ieo36yrttF5NSsJLAbxFpdlc1gvtGCWW+9Cq0b
+dxviW8+TFVEBl1O4f7HVm6EpTscdDxU+bCXWkfjuRb7Dy9GOtt9JPsX8MBTakzh3
+vBgsyi/sN3RqRBcGU40fOoZyfAMT8s1m/uYv52O6IgeuZ/ujbjY=
+-----END RSA PRIVATE KEY-----
+
+bandit16@bandit:/tmp/tmp.9oJHGWdIVr$ cat >> key
+-----BEGIN RSA PRIVATE KEY-----
+MIIEogIBAAKCAQEAvmOkuifmMg6HL2YPIOjon6iWfbp7c3jx34YkYWqUH57SUdyJ
+imZzeyGC0gtZPGujUSxiJSWI/oTqexh+cAMTSMlOJf7+BrJObArnxd9Y7YT2bRPQ
+Ja6Lzb558YW3FZl87ORiO+rW4LCDCNd2lUvLE/GL2GWyuKN0K5iCd5TbtJzEkQTu
+DSt2mcNn4rhAL+JFr56o4T6z8WWAW18BR6yGrMq7Q/kALHYW3OekePQAzL0VUYbW
+JGTi65CxbCnzc/w4+mqQyvmzpWtMAzJTzAzQxNbkR2MBGySxDLrjg0LWN6sK7wNX
+x0YVztz/zbIkPjfkU1jHS+9EbVNj+D1XFOJuaQIDAQABAoIBABagpxpM1aoLWfvD
+KHcj10nqcoBc4oE11aFYQwik7xfW+24pRNuDE6SFthOar69jp5RlLwD1NhPx3iBl
+J9nOM8OJ0VToum43UOS8YxF8WwhXriYGnc1sskbwpXOUDc9uX4+UESzH22P29ovd
+d8WErY0gPxun8pbJLmxkAtWNhpMvfe0050vk9TL5wqbu9AlbssgTcCXkMQnPw9nC
+YNN6DDP2lbcBrvgT9YCNL6C+ZKufD52yOQ9qOkwFTEQpjtF4uNtJom+asvlpmS8A
+vLY9r60wYSvmZhNqBUrj7lyCtXMIu1kkd4w7F77k+DjHoAXyxcUp1DGL51sOmama
++TOWWgECgYEA8JtPxP0GRJ+IQkX262jM3dEIkza8ky5moIwUqYdsx0NxHgRRhORT
+8c8hAuRBb2G82so8vUHk/fur85OEfc9TncnCY2crpoqsghifKLxrLgtT+qDpfZnx
+SatLdt8GfQ85yA7hnWWJ2MxF3NaeSDm75Lsm+tBbAiyc9P2jGRNtMSkCgYEAypHd
+HCctNi/FwjulhttFx/rHYKhLidZDFYeiE/v45bN4yFm8x7R/b0iE7KaszX+Exdvt
+SghaTdcG0Knyw1bpJVyusavPzpaJMjdJ6tcFhVAbAjm7enCIvGCSx+X3l5SiWg0A
+R57hJglezIiVjv3aGwHwvlZvtszK6zV6oXFAu0ECgYAbjo46T4hyP5tJi93V5HDi
+Ttiek7xRVxUl+iU7rWkGAXFpMLFteQEsRr7PJ/lemmEY5eTDAFMLy9FL2m9oQWCg
+R8VdwSk8r9FGLS+9aKcV5PI/WEKlwgXinB3OhYimtiG2Cg5JCqIZFHxD6MjEGOiu
+L8ktHMPvodBwNsSBULpG0QKBgBAplTfC1HOnWiMGOU3KPwYWt0O6CdTkmJOmL8Ni
+blh9elyZ9FsGxsgtRBXRsqXuz7wtsQAgLHxbdLq/ZJQ7YfzOKU4ZxEnabvXnvWkU
+YOdjHdSOoKvDQNWu6ucyLRAWFuISeXw9a/9p7ftpxm0TSgyvmfLF2MIAEwyzRqaM
+77pBAoGAMmjmIJdjp+Ez8duyn3ieo36yrttF5NSsJLAbxFpdlc1gvtGCWW+9Cq0b
+dxviW8+TFVEBl1O4f7HVm6EpTscdDxU+bCXWkfjuRb7Dy9GOtt9JPsX8MBTakzh3
+vBgsyi/sN3RqRBcGU40fOoZyfAMT8s1m/uYv52O6IgeuZ/ujbjY=
+-----END RSA PRIVATE KEY-----
+
+^C
+bandit16@bandit:/tmp/tmp.9oJHGWdIVr$ ls
+key
+bandit16@bandit:/tmp/tmp.9oJHGWdIVr$ cat key
+-----BEGIN RSA PRIVATE KEY-----
+MIIEogIBAAKCAQEAvmOkuifmMg6HL2YPIOjon6iWfbp7c3jx34YkYWqUH57SUdyJ
+imZzeyGC0gtZPGujUSxiJSWI/oTqexh+cAMTSMlOJf7+BrJObArnxd9Y7YT2bRPQ
+Ja6Lzb558YW3FZl87ORiO+rW4LCDCNd2lUvLE/GL2GWyuKN0K5iCd5TbtJzEkQTu
+DSt2mcNn4rhAL+JFr56o4T6z8WWAW18BR6yGrMq7Q/kALHYW3OekePQAzL0VUYbW
+JGTi65CxbCnzc/w4+mqQyvmzpWtMAzJTzAzQxNbkR2MBGySxDLrjg0LWN6sK7wNX
+x0YVztz/zbIkPjfkU1jHS+9EbVNj+D1XFOJuaQIDAQABAoIBABagpxpM1aoLWfvD
+KHcj10nqcoBc4oE11aFYQwik7xfW+24pRNuDE6SFthOar69jp5RlLwD1NhPx3iBl
+J9nOM8OJ0VToum43UOS8YxF8WwhXriYGnc1sskbwpXOUDc9uX4+UESzH22P29ovd
+d8WErY0gPxun8pbJLmxkAtWNhpMvfe0050vk9TL5wqbu9AlbssgTcCXkMQnPw9nC
+YNN6DDP2lbcBrvgT9YCNL6C+ZKufD52yOQ9qOkwFTEQpjtF4uNtJom+asvlpmS8A
+vLY9r60wYSvmZhNqBUrj7lyCtXMIu1kkd4w7F77k+DjHoAXyxcUp1DGL51sOmama
++TOWWgECgYEA8JtPxP0GRJ+IQkX262jM3dEIkza8ky5moIwUqYdsx0NxHgRRhORT
+8c8hAuRBb2G82so8vUHk/fur85OEfc9TncnCY2crpoqsghifKLxrLgtT+qDpfZnx
+SatLdt8GfQ85yA7hnWWJ2MxF3NaeSDm75Lsm+tBbAiyc9P2jGRNtMSkCgYEAypHd
+HCctNi/FwjulhttFx/rHYKhLidZDFYeiE/v45bN4yFm8x7R/b0iE7KaszX+Exdvt
+SghaTdcG0Knyw1bpJVyusavPzpaJMjdJ6tcFhVAbAjm7enCIvGCSx+X3l5SiWg0A
+R57hJglezIiVjv3aGwHwvlZvtszK6zV6oXFAu0ECgYAbjo46T4hyP5tJi93V5HDi
+Ttiek7xRVxUl+iU7rWkGAXFpMLFteQEsRr7PJ/lemmEY5eTDAFMLy9FL2m9oQWCg
+R8VdwSk8r9FGLS+9aKcV5PI/WEKlwgXinB3OhYimtiG2Cg5JCqIZFHxD6MjEGOiu
+L8ktHMPvodBwNsSBULpG0QKBgBAplTfC1HOnWiMGOU3KPwYWt0O6CdTkmJOmL8Ni
+blh9elyZ9FsGxsgtRBXRsqXuz7wtsQAgLHxbdLq/ZJQ7YfzOKU4ZxEnabvXnvWkU
+YOdjHdSOoKvDQNWu6ucyLRAWFuISeXw9a/9p7ftpxm0TSgyvmfLF2MIAEwyzRqaM
+77pBAoGAMmjmIJdjp+Ez8duyn3ieo36yrttF5NSsJLAbxFpdlc1gvtGCWW+9Cq0b
+dxviW8+TFVEBl1O4f7HVm6EpTscdDxU+bCXWkfjuRb7Dy9GOtt9JPsX8MBTakzh3
+vBgsyi/sN3RqRBcGU40fOoZyfAMT8s1m/uYv52O6IgeuZ/ujbjY=
+-----END RSA PRIVATE KEY-----
+
+bandit16@bandit:/tmp/tmp.9oJHGWdIVr$ chmod a-r key
+bandit16@bandit:/tmp/tmp.9oJHGWdIVr$ chmod u+r key
+bandit16@bandit:/tmp/tmp.9oJHGWdIVr$ ssh -i key -p 2220 bandit17@bandit.labs.overthewire.org
+The authenticity of host '[bandit.labs.overthewire.org]:2220 ([127.0.0.1]:2220)' can't be established.
+ED25519 key fingerprint is SHA256:C2ihUBV7ihnV1wUXRb4RrEcLfXC5CXlhmAAM/urerLY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Could not create directory '/home/bandit16/.ssh' (Permission denied).
+Failed to add the host to the list of known hosts (/home/bandit16/.ssh/known_hosts).
+                         _                     _ _ _   
+                        | |__   __ _ _ __   __| (_) |_ 
+                        | '_ \ / _` | '_ \ / _` | | __|
+                        | |_) | (_| | | | | (_| | | |_ 
+                        |_.__/ \__,_|_| |_|\__,_|_|\__|
+                                                       
+
+                      This is an OverTheWire game server. 
+            More information on http://www.overthewire.org/wargames
+
+!!! You are trying to log into this SSH server with a password on port 2220 from localhost.
+!!! Connecting from localhost is blocked to conserve resources.
+!!! Please log out and log in again.
+
+backend: gibson-1
+
+      ,----..            ,----,          .---.
+     /   /   \         ,/   .`|         /. ./|
+    /   .     :      ,`   .'  :     .--'.  ' ;
+   .   /   ;.  \   ;    ;     /    /__./ \ : |
+  .   ;   /  ` ; .'___,/    ,' .--'.  '   \' .
+  ;   |  ; \ ; | |    :     | /___/ \ |    ' '
+  |   :  | ; | ' ;    |.';  ; ;   \  \;      :
+  .   |  ' ' ' : `----'  |  |  \   ;  `      |
+  '   ;  \; /  |     '   :  ;   .   \    .\  ;
+   \   \  ',  /      |   |  '    \   \   ' \ |
+    ;   :    /       '   :  |     :   '  |--"
+     \   \ .'        ;   |.'       \   \ ;
+  www. `---` ver     '---' he       '---" ire.org
+
+
+Welcome to OverTheWire!
+
+If you find any problems, please report them to the #wargames channel on
+discord or IRC.
+
+--[ Playing the games ]--
+
+  This machine might hold several wargames.
+  If you are playing "somegame", then:
+
+    * USERNAMES are somegame0, somegame1, ...
+    * Most LEVELS are stored in /somegame/.
+    * PASSWORDS for each level are stored in /etc/somegame_pass/.
+
+  Write-access to homedirectories is disabled. It is advised to create a
+  working directory with a hard-to-guess name in /tmp/.  You can use the
+  command "mktemp -d" in order to generate a random and hard to guess
+  directory in /tmp/.  Read-access to both /tmp/ is disabled and to /proc
+  restricted so that users cannot snoop on eachother. Files and directories
+  with easily guessable or short names will be periodically deleted! The /tmp
+  directory is regularly wiped.
+  Please play nice:
+
+    * don't leave orphan processes running
+    * don't leave exploit-files laying around
+    * don't annoy other players
+    * don't post passwords or spoilers
+    * again, DONT POST SPOILERS!
+      This includes writeups of your solution on your blog or website!
+
+--[ Tips ]--
+
+  This machine has a 64bit processor and many security-features enabled
+  by default, although ASLR has been switched off.  The following
+  compiler flags might be interesting:
+
+    -m32                    compile for 32bit
+    -fno-stack-protector    disable ProPolice
+    -Wl,-z,norelro          disable relro
+
+  In addition, the execstack tool can be used to flag the stack as
+  executable on ELF binaries.
+
+  Finally, network-access is limited for most levels by a local
+  firewall.
+
+--[ Tools ]--
+
+ For your convenience we have installed a few useful tools which you can find
+ in the following locations:
+
+    * gef (https://github.com/hugsy/gef) in /opt/gef/
+    * pwndbg (https://github.com/pwndbg/pwndbg) in /opt/pwndbg/
+    * gdbinit (https://github.com/gdbinit/Gdbinit) in /opt/gdbinit/
+    * pwntools (https://github.com/Gallopsled/pwntools)
+    * radare2 (http://www.radare.org/)
+
+--[ More information ]--
+
+  For more information regarding individual wargames, visit
+  http://www.overthewire.org/wargames/
+
+  For support, questions or comments, contact us on discord or IRC.
+
+  Enjoy your stay!
+
+bandit17@bandit:~$ 
+```
+
+## What I learned
+How to use nmap for port scanning, how to identify SSL/TLS services, and how to distinguish between echo services and those providing unique responses.
+
+## References 
+- nmap command for port scanning
+- openssl s_client for SSL/TLS connections
+- Port scanner on Wikipedia
+
+# Level 17 → Level 18
+Find the single line that differs between two files
+
+## My solve
+Connected to bandit17 using the SSH private key obtained in the previous level. Used the diff command to compare passwords.old and passwords.new files, which highlighted the only line that was different between them. The password for the next level was the new line in passwords.new.
+
+```
+bandit17@bandit:~$ ls
+passwords.new  passwords.old
+bandit17@bandit:~$ diff passwords.old passwords.new
+42c42
+< CgmS55GVlEKTgx8xpW8HuWnHlBKP924b
+---
+> x2gLTTjFwMOhQ8oWNbMN362QKxfRqGlO
+```
+
+## What I learned
+How to use the diff command to identify differences between files, which shows changes with < for the first file and > for the second file.
+
+## References 
+- diff command for comparing files line by line
+
+# Level 18 → Level 19
+Access a server that logs you out immediately upon login
+
+## My solve
+The challenge involved a server where the .bashrc file had been modified to log out the user immediately after SSH login. To bypass this, I used SSH's ability to execute commands directly on connection without starting an interactive shell.
+
+Used SSH with a command at the end to read the readme file without triggering the modified .bashrc:
+```
+ @kali  ssh -p 2220 bandit18@bandit.labs.overthewire.org "cat readme"
+                         _                     _ _ _   
+                        | |__   __ _ _ __   __| (_) |_ 
+                        | '_ \ / _` | '_ \ / _` | | __|
+                        | |_) | (_| | | | | (_| | | |_ 
+                        |_.__/ \__,_|_| |_|\__,_|_|\__|
+                                                       
+
+                      This is an OverTheWire game server. 
+            More information on http://www.overthewire.org/wargames
+
+backend: gibson-1
+bandit18@bandit.labs.overthewire.org's password: 
+cGWpMaKXVwDUNgPAVJbWYuGHVn9zl3j8
+```
+
+## What I learned
+How to execute commands directly via SSH without starting an interactive session, which is useful for bypassing login restrictions or modified startup files.
+
+## References 
+- ssh command with remote command execution
+- Understanding .bashrc and shell initialization files
+
+# Level 19 → Level 20
+Use a setuid binary to access protected files
+
+## My solve
+Connected to bandit19 and found a setuid binary in the home directory. Running it without arguments displayed usage instructions. The binary allowed me to execute commands as the bandit20 user, so I used it to read the password file at /etc/bandit_pass/bandit20.
+
+```
+bandit19@bandit:~$ ./bandit20-do cat /etc/bandit_pass/bandit20
+0qXahG8ZjOVMN9Ghs7iOWsCfZyXOUbYO
+```
+
+## What I learned
+How setuid binaries work - programs that run with the permissions of their owner rather than the user executing them, allowing for controlled privilege escalation.
+
+## References 
+- setuid on Wikipedia
+- Understanding privileged execution in Linux
+
+  # Level 20 → Level 21
+Use a setuid binary that requires network communication
+
+## My solve
+Connected to bandit20 and examined the setuid binary. This binary needed to connect to a port where it would receive the current level's password and then send back the next level's password.
+
+To solve this, I needed to:
+1. Start a netcat listener on a chosen port in the background or in another terminal session
+2. Make the listener send the current level's password when connected to
+3. Run the setuid binary pointing to that port
+4. Capture the response with the next password
+
+Used either screen/tmux or background jobs to manage these parallel processes.
+
+```
+bandit20@bandit:~$ echo -n "0qXahG8ZjOVMN9Ghs7iOWsCfZyXOUbYO" | nc -l -p 6969 &
+[1] 1234732
+bandit20@bandit:~$ ./suconnect 6969
+Read: 0qXahG8ZjOVMN9Ghs7iOWsCfZyXOUbYO
+Password matches, sending next password
+EeoULMCra2q0dSkYj561DX7s1CpBuOBt
+```
+
+## What I learned
+How to set up a simple network service using netcat, manage multiple processes, and use job control or terminal multiplexers in Linux.
+
+## References 
+- nc (netcat) for creating network connections
+- Job control in Unix (bg, fg, jobs)
+- screen/tmux for terminal session management
+
+# Level 21 → Level 22
+Investigate scheduled cron jobs to find password
+
+## My solve
+Connected to bandit21 and examined the cron jobs in /etc/cron.d/ directory. Found a cron job related to bandit22, which executed a script at regular intervals. Examined the script to find out what it was doing, which revealed it was copying the bandit22 password to a readable file in /tmp.
+
+```
+[terminal output placeholder]
+```
+
+## What I learned
+How to examine cron job configurations and understand scheduled tasks in Linux systems, including how to trace what scripts are doing when executed automatically.
+
+## References 
+- cron and crontab for scheduled job management
+- crontab(5) manual page for understanding cron job syntax
