@@ -1653,3 +1653,562 @@ The password of user bandit25 is iCi86ttT4KSNe1armKiwbQNmB3YJP3q4
 ## References 
 - Bash scripting for loops
 - Using netcat to connect to network services
+
+# Level 25 → Level 26
+Break out of a restricted shell
+
+## My solve
+I logged into bandit25 and found an SSH key for bandit26. Before connecting, I investigated what shell bandit26 was using by checking /etc/passwd. I discovered bandit26 had a custom shell instead of /bin/bash.
+
+Examining this custom shell revealed it just displayed a text file and then exited. I realized I needed to prevent the automatic exit by making my terminal window small enough to force the text viewer to pause. When the pager (more) was active, I used vi commands to spawn a shell and gain full access.
+
+```bash
+e: /etc/bandit_pass/bandit26
+s0773xxkk0MXfdqOfPRVr9L3jJBUOgCZ
+:set shell=/bin/bash
+:shell
+:shell
+bandit26@bandit:~$
+```
+
+## What I learned
+- How to identify and escape restricted shells
+- Using terminal size to manipulate program behavior
+- Leveraging text editors like vi to spawn shells
+
+## References 
+- vi editor commands
+- Understanding /etc/passwd entries
+- Terminal pager behavior
+- 
+# Level 26 → Level 27: Using a setuid binary
+
+## My solve
+After breaking out of the restricted shell in level 26, I explored the home directory and found a setuid binary called "bandit27-do". This binary appeared to allow running commands as the bandit27 user.
+
+I executed the binary to see how it worked. Without arguments, it prompted me to provide a command. I then used it to read the password for the next level by accessing the password file that only bandit27 could read.
+
+```bash
+bandit26@bandit:~$ ./bandit27-do cat /etc/bandit_pass/bandit27      
+upsNCc7vzaRDx6oZC6GiR6ERwe1MowGB
+```
+
+## What I learned
+- How setuid binaries work - allowing execution with the file owner's permissions
+- Identifying and using setuid binaries to escalate privileges
+- Reading protected files by executing commands as another user
+
+## References
+- Setuid permission in Linux
+- Command execution with elevated privileges
+- File permission structure in Unix systems
+
+# Level 27 → Level 28: Git repository exploration
+
+## My solve
+For this level, I needed to clone a Git repository and find the password inside it. First, I created a temporary directory to work in since the home directory might have limited permissions. 
+
+After setting up my workspace, I cloned the repository from the specified SSH URL, making sure to use the correct port. I used the same password as bandit27 for the git user as instructed.
+
+Once I had the repository cloned locally, I explored the contents by listing files and examining them. The repository contained a README file that held the password for the next level.
+
+```bash
+bandit27@bandit:~$ man git
+bandit27@bandit:~$ mktemp -d
+/tmp/tmp.Pl8IhrBqFi
+bandit27@bandit:~$ cd /tmp/tmp.Pl8IhrBqFi
+bandit27@bandit:/tmp/tmp.Pl8IhrBqFi$ GIT_SSH_COMMAND="ssh -p 2220" git clone bandit27-git@localhost:/home/bandit27-git/repo 
+Cloning into 'repo'...
+The authenticity of host '[localhost]:2220 ([127.0.0.1]:2220)' can't be established.
+ED25519 key fingerprint is SHA256:C2ihUBV7ihnV1wUXRb4RrEcLfXC5CXlhmAAM/urerLY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Could not create directory '/home/bandit27/.ssh' (Permission denied).
+Failed to add the host to the list of known hosts (/home/bandit27/.ssh/known_hosts).
+                         _                     _ _ _   
+                        | |__   __ _ _ __   __| (_) |_ 
+                        | '_ \ / _` | '_ \ / _` | | __|
+                        | |_) | (_| | | | | (_| | | |_ 
+                        |_.__/ \__,_|_| |_|\__,_|_|\__|
+                                                       
+
+                      This is an OverTheWire game server. 
+            More information on http://www.overthewire.org/wargames
+
+backend: gibson-0
+bandit27-git@localhost's password: 
+remote: Enumerating objects: 3, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (3/3), done.
+bandit27@bandit:/tmp/tmp.Pl8IhrBqFi$ ls
+repo
+bandit27@bandit:/tmp/tmp.Pl8IhrBqFi$ cd repo
+bandit27@bandit:/tmp/tmp.Pl8IhrBqFi/repo$ ls
+README
+bandit27@bandit:/tmp/tmp.Pl8IhrBqFi/repo$ cat README 
+The password to the next level is: Yz9IpL0sBcCeuG7m9uQFt8ZNpS4HZRcN
+
+```
+
+## What I learned
+- How to clone a Git repository using SSH URLs
+- Working with Git repositories to extract information
+- Creating temporary workspaces for file operations
+- Handling authentication with Git repositories
+
+## References
+- Git clone command and options
+- SSH URL format for Git repositories
+- Basic Git repository navigation
+- Managing file permissions in temporary directories
+
+# Level 28 → Level 29: Git history investigation
+
+## My solve
+For this level, I needed to dig deeper into Git functionality. I started by creating a temporary directory to work in, then cloned the Git repository using the provided SSH URL.
+
+After exploring the repository contents, I found a README file, but the password was redacted or modified. Realizing that Git keeps track of all changes to files, I decided to investigate the commit history to see if the password had been visible in previous versions of the file.
+
+By examining the commit history and viewing the differences between commits, I was able to find a previous version of the README that contained the unredacted password for level 29.
+
+```bash
+bandit28@bandit:~$ mktemp -d
+/tmp/tmp.f721Jv7bm3
+bandit28@bandit:~$ cd /tmp/tmp.f721Jv7bm3
+bandit28@bandit:/tmp/tmp.f721Jv7bm3$ git clone ssh://bandit28-git@localhost:2220/home/bandit28-git/repo
+Cloning into 'repo'...
+The authenticity of host '[localhost]:2220 ([127.0.0.1]:2220)' can't be established.
+ED25519 key fingerprint is SHA256:C2ihUBV7ihnV1wUXRb4RrEcLfXC5CXlhmAAM/urerLY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Could not create directory '/home/bandit28/.ssh' (Permission denied).
+Failed to add the host to the list of known hosts (/home/bandit28/.ssh/known_hosts).
+                         _                     _ _ _   
+                        | |__   __ _ _ __   __| (_) |_ 
+                        | '_ \ / _` | '_ \ / _` | | __|
+                        | |_) | (_| | | | | (_| | | |_ 
+                        |_.__/ \__,_|_| |_|\__,_|_|\__|
+                                                       
+
+                      This is an OverTheWire game server. 
+            More information on http://www.overthewire.org/wargames
+
+backend: gibson-0
+bandit28-git@localhost's password: 
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 9 (delta 2), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (9/9), done.
+Resolving deltas: 100% (2/2), done.
+bandit28@bandit:/tmp/tmp.f721Jv7bm3$ ls
+repo
+bandit28@bandit:/tmp/tmp.f721Jv7bm3$ cd repo
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo$ ls
+README.md
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo$ cat README.md 
+# Bandit Notes
+Some notes for level29 of bandit.
+
+## credentials
+
+- username: bandit29
+- password: xxxxxxxxxx
+
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo$ ls -a
+.  ..  .git  README.md
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo$ cat .git
+cat: .git: Is a directory
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo$ cd .git
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo/.git$ ls
+branches  description  hooks  info  objects      refs
+config    HEAD         index  logs  packed-refs
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo/.git$ cd ..
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo$ file README.md 
+README.md: ASCII text
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo$ mv README.md r.txt
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo$ cat r.txt 
+# Bandit Notes
+Some notes for level29 of bandit.
+
+## credentials
+
+- username: bandit29
+- password: xxxxxxxxxx
+
+
+bandit28@bandit:~$ cd /tmp/tmp.f721Jv7bm3/repo/.git
+bandit28@bandit:/tmp/tmp.f721Jv7bm3/repo/.git$ git show HEAD
+commit 710c14a2e43cfd97041924403e00efb00b3a956e (HEAD -> master, origin/master, origin/HEAD)
+Author: Morla Porla <morla@overthewire.org>
+Date:   Fri Aug 15 13:16:10 2025 +0000
+
+    fix info leak
+
+diff --git a/README.md b/README.md
+index d4e3b74..5c6457b 100644
+--- a/README.md
++++ b/README.md
+@@ -4,5 +4,5 @@ Some notes for level29 of bandit.
+ ## credentials
+ 
+ - username: bandit29
+-- password: 4pT1t5DENaYuqnqvadYs1oE4QLCdjmJ7
++- password: xxxxxxxxxx
+```
+
+## What I learned
+- How to examine Git commit history 
+- Viewing changes between different commits
+- Retrieving previous versions of files in Git
+- Understanding how sensitive data can persist in version control history
+
+## References
+- Git log command
+- Git diff and show commands
+- Git checkout for accessing previous file versions
+- Best practices for handling sensitive data in repositories
+
+# Level 29 → Level 30: Exploring Git branches
+
+## My solve
+For this level, I once again needed to work with a git repository. I created a temporary directory in /tmp to work in, then cloned the repository using the provided SSH URL.
+
+After examining the main branch, I couldn't immediately find the password. The README mentioned something about production vs. development environments, which gave me a hint that I should look for different branches in the repository.
+
+I listed all available branches, including remote ones, and found additional branches beyond just the main branch. By checking out these different branches and examining their contents, I was able to find the password in one of the alternative branches.
+
+```bash
+bandit29@bandit:~$ mktemp -d
+/tmp/tmp.01VS017Q7C
+bandit29@bandit:~$ cd /tmp/tmp.01VS017Q7C
+bandit29@bandit:/tmp/tmp.01VS017Q7C$ git clone ssh://bandit29-git@localhost:2220/home/bandit29-git/repo
+Cloning into 'repo'...
+The authenticity of host '[localhost]:2220 ([127.0.0.1]:2220)' can't be established.
+ED25519 key fingerprint is SHA256:C2ihUBV7ihnV1wUXRb4RrEcLfXC5CXlhmAAM/urerLY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Could not create directory '/home/bandit29/.ssh' (Permission denied).
+Failed to add the host to the list of known hosts (/home/bandit29/.ssh/known_hosts).
+                         _                     _ _ _   
+                        | |__   __ _ _ __   __| (_) |_ 
+                        | '_ \ / _` | '_ \ / _` | | __|
+                        | |_) | (_| | | | | (_| | | |_ 
+                        |_.__/ \__,_|_| |_|\__,_|_|\__|
+                                                       
+
+                      This is an OverTheWire game server. 
+            More information on http://www.overthewire.org/wargames
+
+backend: gibson-0
+bandit29-git@localhost's password: 
+remote: Enumerating objects: 16, done.
+remote: Counting objects: 100% (16/16), done.
+remote: Compressing objects: 100% (11/11), done.
+remote: Total 16 (delta 2), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (16/16), done.
+Resolving deltas: 100% (2/2), done.
+bandit29@bandit:/tmp/tmp.01VS017Q7C$ ls
+repo
+bandit29@bandit:/tmp/tmp.01VS017Q7C$ cd repo
+bandit29@bandit:/tmp/tmp.01VS017Q7C/repo$ ls
+README.md
+bandit29@bandit:/tmp/tmp.01VS017Q7C/repo$ cat README.md 
+# Bandit Notes
+Some notes for bandit30 of bandit.
+
+## credentials
+
+- username: bandit30
+- password: <no passwords in production!>
+bandit29@bandit:/tmp/tmp.01VS017Q7C/repo$ git branch -vva
+* master                     ccacd76 [origin/master] fix username
+  remotes/origin/HEAD        -> origin/master
+  remotes/origin/dev         569126a add data needed for development
+  remotes/origin/master      ccacd76 fix username
+  remotes/origin/sploits-dev f6e8c4c add some silly exploit, just for shit and giggles
+bandit29@bandit:/tmp/tmp.01VS017Q7C/repo$ git checkout -b origin/master origin/sploits-dev
+branch 'origin/master' set up to track 'origin/sploits-dev'.
+Switched to a new branch 'origin/master'
+bandit29@bandit:/tmp/tmp.01VS017Q7C/repo$ cat README.md 
+# Bandit Notes
+Some notes for bandit30 of bandit.
+
+## credentials
+
+- username: bandit30
+- password: <no passwords in production!>
+
+bandit29@bandit:/tmp/tmp.01VS017Q7C/repo$ git checkout -b origin/sploits-dev origin/dev
+branch 'origin/sploits-dev' set up to track 'origin/dev'.
+Switched to a new branch 'origin/sploits-dev'
+bandit29@bandit:/tmp/tmp.01VS017Q7C/repo$ cat README.md 
+# Bandit Notes
+Some notes for bandit30 of bandit.
+
+## credentials
+
+- username: bandit30
+- password: qp30ex3VLz5MDG1n91YowTv4Q8l7CDZL
+```
+
+## What I learned
+- How to list and examine different branches in a Git repository
+- Switching between branches using git checkout
+- The importance of checking all branches when hunting for information
+- Understanding how different branches can contain different versions of files
+
+## References
+- Git branch and remote commands
+- Git checkout for switching branches
+- Understanding Git branch structure
+- Git branch naming conventions and purposes
+
+# Level 30 → Level 31: Discovering Git tags
+
+## My solve
+For this level, I continued working with Git repositories. I created a new temporary directory and cloned the repository from the provided SSH URL.
+
+After checking the README file and finding nothing useful, I examined the commit history and branches but still couldn't find the password. I realized I needed to explore other Git features that could store information.
+
+I decided to look at Git tags, which are references to specific points in Git history. Using the appropriate Git commands to list all tags in the repository, I discovered a hidden tag. When I examined the content of this tag, it revealed the password for the next level.
+
+```bash
+bandit30@bandit:~$ cd /tmp/tmp.oP8orhVG22
+git clone ssh://bandit30-git@localhost:2220/home/bandit30-git/repo
+cd repo
+ls -la
+Cloning into 'repo'...
+The authenticity of host '[localhost]:2220 ([127.0.0.1]:2220)' can't be established.
+ED25519 key fingerprint is SHA256:C2ihUBV7ihnV1wUXRb4RrEcLfXC5CXlhmAAM/urerLY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Could not create directory '/home/bandit30/.ssh' (Permission denied).
+Failed to add the host to the list of known hosts (/home/bandit30/.ssh/known_hosts).
+                         _                     _ _ _   
+                        | |__   __ _ _ __   __| (_) |_ 
+                        | '_ \ / _` | '_ \ / _` | | __|
+                        | |_) | (_| | | | | (_| | | |_ 
+                        |_.__/ \__,_|_| |_|\__,_|_|\__|
+                                                       
+
+                      This is an OverTheWire game server. 
+            More information on http://www.overthewire.org/wargames
+
+backend: gibson-0
+bandit30-git@localhost's password: 
+remote: Enumerating objects: 4, done.
+remote: Counting objects: 100% (4/4), done.
+Receiving objects: 100% (4/4), 297 bytes | 297.00 KiB/s, done.
+remote: Total 4 (delta 0), reused 0 (delta 0), pack-reused 0
+total 16
+drwxrwxr-x 3 bandit30 bandit30 4096 Sep 27 18:33 .
+drwx------ 3 bandit30 bandit30 4096 Sep 27 18:33 ..
+drwxrwxr-x 8 bandit30 bandit30 4096 Sep 27 18:33 .git
+-rw-rw-r-- 1 bandit30 bandit30   30 Sep 27 18:33 README.md
+bandit30@bandit:/tmp/tmp.oP8orhVG22/repo$ cat README.md 
+just an epmty file... muahaha
+bandit30@bandit:/tmp/tmp.oP8orhVG22/repo$ git log
+commit de654f201881f820c364f176ffcdea2876431bee (HEAD -> master, origin/master, origin/HEAD)
+Author: Ben Dover <noone@overthewire.org>
+Date:   Fri Aug 15 13:16:14 2025 +0000
+
+    initial commit of README.md
+bandit30@bandit:/tmp/tmp.oP8orhVG22/repo$ git branch -vva
+* master                de654f2 [origin/master] initial commit of README.md
+  remotes/origin/HEAD   -> origin/master
+  remotes/origin/master de654f2 initial commit of README.md
+bandit30@bandit:/tmp/tmp.oP8orhVG22/repo$ git checkout -b origin/master origin/HEAD
+branch 'origin/master' set up to track 'origin/master'.
+Switched to a new branch 'origin/master'
+bandit30@bandit:/tmp/tmp.oP8orhVG22/repo$ cat README.md 
+just an epmty file... muahaha
+bandit30@bandit:/tmp/tmp.oP8orhVG22/repo$ git tag
+secret
+bandit30@bandit:/tmp/tmp.oP8orhVG22/repo$ git show secret
+fb5S2xb7bRyFmAvQYQGEqsbhVyJqhnDy
+```
+
+## What I learned
+- Git tags as a way to mark specific points in repository history
+- How to list and examine tags in a Git repository
+- Additional places in Git where information can be stored beyond files, commits, and branches
+- The importance of exploring all Git features when searching for hidden information
+
+## References
+- Git tag commands and options
+- Types of Git references
+- Viewing the content of Git objects
+- Advanced Git commands for repository exploration
+
+# Level 31 → Level 32: Git pushing changes
+
+## My solve
+For this level, I needed to interact with a Git repository in a different way than previous levels. I created a temporary directory and cloned the repository from the given SSH URL.
+
+After examining the repository, I found a README file that gave specific instructions about pushing a file to the remote repository. The instructions mentioned creating a file with specific content and pushing it to the master branch.
+
+Following these instructions, I created the required file, added it to the staging area, and attempted to push it. I successfully pushed the changes to the repository, which then revealed the password for the next level as a response message.
+
+```bash
+bandit31@bandit:~$ mktemp -d
+/tmp/tmp.J5V6eC60Er
+bandit31@bandit:~$ cd /tmp/tmp.J5V6eC60Er
+git clone ssh://bandit31-git@localhost:2220/home/bandit31-git/repo
+cd repo
+ls -la
+cat README.md
+echo "May I come in?" > key.txt
+git add -f key.txt
+git commit -m "add key.txt"
+git push origin master
+Cloning into 'repo'...
+The authenticity of host '[localhost]:2220 ([127.0.0.1]:2220)' can't be established.
+ED25519 key fingerprint is SHA256:C2ihUBV7ihnV1wUXRb4RrEcLfXC5CXlhmAAM/urerLY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Could not create directory '/home/bandit31/.ssh' (Permission denied).
+Failed to add the host to the list of known hosts (/home/bandit31/.ssh/known_hosts).
+                         _                     _ _ _   
+                        | |__   __ _ _ __   __| (_) |_ 
+                        | '_ \ / _` | '_ \ / _` | | __|
+                        | |_) | (_| | | | | (_| | | |_ 
+                        |_.__/ \__,_|_| |_|\__,_|_|\__|
+                                                       
+
+                      This is an OverTheWire game server. 
+            More information on http://www.overthewire.org/wargames
+
+backend: gibson-0
+bandit31-git@localhost's password: 
+remote: Enumerating objects: 4, done.
+remote: Counting objects: 100% (4/4), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 4 (delta 0), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (4/4), 382 bytes | 382.00 KiB/s, done.
+total 20
+drwxrwxr-x 3 bandit31 bandit31 4096 Sep 27 19:03 .
+drwx------ 3 bandit31 bandit31 4096 Sep 27 19:03 ..
+drwxrwxr-x 8 bandit31 bandit31 4096 Sep 27 19:03 .git
+-rw-rw-r-- 1 bandit31 bandit31    6 Sep 27 19:03 .gitignore
+-rw-rw-r-- 1 bandit31 bandit31  147 Sep 27 19:03 README.md
+This time your task is to push a file to the remote repository.
+
+Details:
+    File name: key.txt
+    Content: 'May I come in?'
+    Branch: master
+
+[master 67a0829] add key.txt
+ 1 file changed, 1 insertion(+)
+ create mode 100644 key.txt
+The authenticity of host '[localhost]:2220 ([127.0.0.1]:2220)' can't be established.
+ED25519 key fingerprint is SHA256:C2ihUBV7ihnV1wUXRb4RrEcLfXC5CXlhmAAM/urerLY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Could not create directory '/home/bandit31/.ssh' (Permission denied).
+Failed to add the host to the list of known hosts (/home/bandit31/.ssh/known_hosts).
+                         _                     _ _ _   
+                        | |__   __ _ _ __   __| (_) |_ 
+                        | '_ \ / _` | '_ \ / _` | | __|
+                        | |_) | (_| | | | | (_| | | |_ 
+                        |_.__/ \__,_|_| |_|\__,_|_|\__|
+                                                       
+
+                      This is an OverTheWire game server. 
+            More information on http://www.overthewire.org/wargames
+
+backend: gibson-0
+bandit31-git@localhost's password: 
+Enumerating objects: 4, done.
+Counting objects: 100% (4/4), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (3/3), 324 bytes | 324.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+remote: ### Attempting to validate files... ####
+remote: 
+remote: .oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.
+remote: 
+remote: Well done! Here is the password for the next level:
+remote: 3O9RfhqyAlVBEZpVb6LYStshZoqoSx5K 
+remote: 
+remote: .oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.
+remote: 
+To ssh://localhost:2220/home/bandit31-git/repo
+ ! [remote rejected] master -> master (pre-receive hook declined)
+error: failed to push some refs to 'ssh://localhost:2220/home/bandit31-git/repo'
+```
+
+## What I learned
+- How to push changes to a Git repository
+- Working with .gitignore files and their impact on Git operations
+- Forcing Git to add files that would normally be ignored
+- The workflow of modifying and committing changes in a Git repository
+
+## References
+- Git add, commit, and push commands
+- Understanding and working with .gitignore files
+- Git force options for adding files
+- Best practices for committing changes to repositories
+
+# Level 32 → Level 33: Escaping the uppercase shell
+
+## My solve
+When I logged into level 32, I was greeted by an unusual shell prompt labeled "UPPERCASE SHELL". I quickly discovered that this shell was converting all my input to uppercase before executing it, which made running normal commands impossible.
+
+I needed to find a way to execute commands without having them converted to uppercase. After trying various approaches, I remembered that shell environment variables use a special syntax and might be processed differently. I experimented with special shell variables and found that using `$0` - which represents the shell itself - allowed me to break out of the restricted environment and get a normal shell.
+
+Once I had access to a regular shell, I could get the password from /etc/bandit_pass/bandit33.
+
+```bash
+WELCOME TO THE UPPERCASE SHELL
+>> $0
+$ cat /etc/bandit_pass/bandit33
+tQdtbs5D5i2vJwkO8mEyYEyTL8izoeJ0
+```
+
+## What I learned
+- Shell variables and how they're processed in different contexts
+- Special shell variables like $0, $1, etc. and their meanings
+- Techniques for escaping restricted shell environments
+- How input transformation can be used to restrict command execution
+
+## References
+- Shell special parameters ($0, $1, etc.)
+- Shell environment variables
+- Techniques for breaking out of restricted shells
+- Understanding command processing in Unix shells
+
+# Level 33 → Level 34: The End of the Journey
+
+## My solve
+Upon logging into level 33, I found myself at the end of the current Bandit wargame challenges. The message indicated that level 34 doesn't exist yet, suggesting I had completed all the available levels in this series.
+
+I took some time to explore the home directory to see if there was any congratulatory message or additional information. This final level served as a conclusion to the progressive hacking challenges that taught various Linux and security concepts.
+
+```bash
+bandit33@bandit:~$ cat README.txt 
+Congratulations on solving the last level of this game!
+
+At this moment, there are no more levels to play in this game. However, we are constantly working
+on new levels and will most likely expand this game with more levels soon.
+Keep an eye out for an announcement on our usual communication channels!
+In the meantime, you could play some of our other wargames.
+
+If you have an idea for an awesome new level, please let us know!
+```
+
+## What I learned
+- Completing all the Bandit challenges demonstrates proficiency with many fundamental Linux skills
+- The importance of combining different techniques learned throughout the levels
+- How to approach and solve security challenges methodically
+- The value of understanding command line tools and system internals
+
+## References
+- OverTheWire Bandit wargame documentation
+- Linux command line fundamentals
+- Basic to intermediate security concepts
+- Resources for continuing education in cybersecurity
