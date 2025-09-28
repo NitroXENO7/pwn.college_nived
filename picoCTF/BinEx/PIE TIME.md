@@ -1,7 +1,7 @@
-#Description
+# Description
 Can you try to get the flag? Beware we have PIE!
 
-#Solve
+# Solve
 Checked the source code, found that program was asking to jump to a memory location and prints the memory location of main function, found a function win that gives the flag, `objdump`'d the binary to find the memory location of win relative to main function , found a difference of 96, then subtracted 96 from location of main function given in terminal to run the win function and get the flag
 
 `flag: picoCTF{b4s1c_p051t10n_1nd3p3nd3nc3_801240da}`
