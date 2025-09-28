@@ -1,1 +1,1 @@
-# pwn.college_nived
+# Nived, MIT Manipal CSE 29'
